@@ -4,6 +4,7 @@ import LivePreview from '../components/LivePreview.jsx';
 import ThemeSwitcher from '../components/ThemeSwitcher.jsx';
 import ProjectEditor from '../components/ProjectEditor.jsx';
 import SkillsEditor from '../components/SkillsEditor.jsx';
+import ExperienceEditor from '../components/ExperienceEditor.jsx';
 import ContactEditor from '../components/ContactEditor.jsx';
 import DragSectionList from '../components/DragSectionList.jsx';
 import { createPortfolio, updatePortfolio, getPortfolio } from '../services/portfolioService.js';
@@ -11,10 +12,11 @@ import { createPortfolio, updatePortfolio, getPortfolio } from '../services/port
 const initialData = {
   name: '',
   theme: 'modern',
-  sectionOrder: ['about', 'projects', 'skills', 'contact'],
+  sectionOrder: ['about', 'projects', 'skills', 'experience', 'contact'],
   about: { title: '', description: '' },
   projects: [],
   skills: [],
+  experience: [],
   contact: { email: '', phone: '', linkedin: '', github: '' },
   customSections: {}, // { [id]: { title, body } }
 };
@@ -24,10 +26,22 @@ const STANDARD_LABELS = {
   about:    '👤 About',
   projects: '🚀 Projects',
   skills:   '🛠 Skills',
+  experience: 'Experience',
   contact:  '📬 Contact',
 };
 
-const STANDARD_IDS = ['about', 'projects', 'skills', 'contact'];
+const STANDARD_IDS = ['about', 'projects', 'skills', 'experience', 'contact'];
+
+const normalizeSectionOrder = (order = initialData.sectionOrder) => {
+  const nextOrder = order.length ? [...order] : [...initialData.sectionOrder];
+  if (nextOrder.includes('experience')) return nextOrder;
+
+  const contactIndex = nextOrder.indexOf('contact');
+  if (contactIndex === -1) return [...nextOrder, 'experience'];
+
+  nextOrder.splice(contactIndex, 0, 'experience');
+  return nextOrder;
+};
 
 function Editor() {
   const { slug: urlSlug } = useParams();
@@ -51,10 +65,11 @@ function Editor() {
         setFormData({
           name: p.name || '',
           theme: p.theme || 'modern',
-          sectionOrder: p.sectionOrder || initialData.sectionOrder,
+          sectionOrder: normalizeSectionOrder(p.sectionOrder),
           about: p.about || initialData.about,
           projects: p.projects || [],
           skills: p.skills || [],
+          experience: p.experience || [],
           contact: p.contact || initialData.contact,
           customSections: p.customSections || {},
         });
@@ -67,7 +82,7 @@ function Editor() {
   // Partial updater — keeps the rest of formData intact
   const update = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
 
-  // Add a section by name. Standard names (about/projects/skills/contact) re-add
+  // Add a section by name. Standard names re-add
   // a removed standard section; anything else creates a new custom section.
   const handleAddSection = (name) => {
     const lc = name.trim().toLowerCase();
@@ -231,6 +246,14 @@ function Editor() {
             <SkillsEditor
               skills={formData.skills}
               onChange={(s) => update('skills', s)}
+            />
+          </div>
+
+          {/* Experience */}
+          <div style={styles.section}>
+            <ExperienceEditor
+              experience={formData.experience}
+              onChange={(items) => update('experience', items)}
             />
           </div>
 

@@ -35,6 +35,11 @@ const getThemeCSS = (theme) => {
       .links a:hover{text-decoration:underline}
       .skills-grid{display:flex;flex-wrap:wrap;gap:10px}
       .skill-tag{background:var(--tag-bg);color:var(--tag-text);padding:6px 14px;border-radius:20px;font-size:.9rem;font-weight:500}
+      .experience-card{border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px}
+      .experience-card h3{color:var(--text);font-size:1.05rem;margin-bottom:4px}
+      .experience-meta{color:var(--muted);font-size:.9rem;margin-bottom:8px}
+      .experience-card ul{padding-left:20px;margin:10px 0}
+      .experience-card li{color:var(--muted);margin-bottom:6px}
       .contact-grid{display:grid;gap:12px}
       .contact-item{font-size:.95rem}
       .contact-item strong{margin-right:8px}
@@ -61,6 +66,11 @@ const getThemeCSS = (theme) => {
       .links a:hover{text-decoration:underline}
       .skills-grid{display:flex;flex-wrap:wrap;gap:10px}
       .skill-tag{background:var(--tag-bg);color:var(--tag-text);padding:6px 14px;border-radius:20px;font-size:.9rem;font-weight:500}
+      .experience-card{border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;background:rgba(255,255,255,.03)}
+      .experience-card h3{color:var(--text);font-size:1.05rem;margin-bottom:4px}
+      .experience-meta{color:var(--muted);font-size:.9rem;margin-bottom:8px}
+      .experience-card ul{padding-left:20px;margin:10px 0}
+      .experience-card li{color:var(--muted);margin-bottom:6px}
       .contact-grid{display:grid;gap:12px}
       .contact-item{font-size:.95rem}
       .contact-item strong{margin-right:8px}
@@ -90,6 +100,11 @@ const getThemeCSS = (theme) => {
       .skill-tag:nth-child(3n+1){background:#fdf4ff;color:#a21caf;border-color:#e879f9}
       .skill-tag:nth-child(3n+2){background:#fff7ed;color:#c2410c;border-color:#fb923c}
       .skill-tag:nth-child(3n){background:#ecfdf5;color:#047857;border-color:#4ade80}
+      .experience-card{border:2px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px}
+      .experience-card h3{color:var(--text);font-size:1.05rem;margin-bottom:4px;font-weight:700}
+      .experience-meta{color:var(--muted);font-size:.9rem;margin-bottom:8px}
+      .experience-card ul{padding-left:20px;margin:10px 0}
+      .experience-card li{color:var(--muted);margin-bottom:6px}
       .contact-grid{display:grid;gap:12px}
       .contact-item{font-size:.95rem;display:flex;align-items:center;gap:8px}
       .contact-item strong{min-width:72px}
@@ -141,6 +156,45 @@ const renderSkills = (skills = []) => {
   return `<section id="skills"><h2>Skills</h2><div class="skills-grid">${tags}</div></section>`;
 };
 
+const formatDate = (value) => {
+  if (!value) return '';
+  const [year, month] = String(value).split('-');
+  if (!year || !month) return escapeHtml(value);
+  const date = new Date(Number(year), Number(month) - 1);
+  return date.toLocaleString('en', { month: 'short', year: 'numeric' });
+};
+
+const renderExperience = (experience = []) => {
+  if (!experience.length) {
+    return '<section id="experience"><h2>Experience</h2><p style="color:var(--muted)">No experience added yet.</p></section>';
+  }
+
+  const cards = experience
+    .map((item) => {
+      const companyLine = [item.company, item.employmentType].filter(Boolean).map(escapeHtml).join(' · ');
+      const dateLine = [formatDate(item.startDate), item.currentlyWorking ? 'Present' : formatDate(item.endDate)]
+        .filter(Boolean)
+        .join(' - ');
+      const meta = [companyLine, escapeHtml(item.location), dateLine].filter(Boolean).join(' | ');
+      const bullets = (item.description || [])
+        .filter(Boolean)
+        .map((line) => `<li>${escapeHtml(line)}</li>`)
+        .join('');
+      const skills = (item.skillsUsed || []).filter(Boolean).map(escapeHtml).join(', ');
+
+      return `
+    <div class="experience-card">
+      <h3>${escapeHtml(item.jobTitle)}</h3>
+      ${meta ? `<p class="experience-meta">${meta}</p>` : ''}
+      ${bullets ? `<ul>${bullets}</ul>` : ''}
+      ${skills ? `<p class="tech">Skills: ${skills}</p>` : ''}
+    </div>`;
+    })
+    .join('');
+
+  return `<section id="experience"><h2>Experience</h2>${cards}</section>`;
+};
+
 const renderContact = (contact = {}) => {
   const items = [];
   if (contact.email)
@@ -172,23 +226,24 @@ const STANDARD_RENDERERS = {
   about: (d) => renderAbout(d.about),
   projects: (d) => renderProjects(d.projects),
   skills: (d) => renderSkills(d.skills),
+  experience: (d) => renderExperience(d.experience),
   contact: (d) => renderContact(d.contact),
 };
 
 /* ── Main export ─────────────────────────────────────────────── */
 
 const generatePortfolioHTML = (portfolio) => {
-  const { name, theme, sectionOrder, about, projects, skills, contact, customSections = {} } = portfolio;
+  const { name, theme, sectionOrder, about, projects, skills, experience, contact, customSections = {} } = portfolio;
   const css = getThemeCSS(theme || 'modern');
   const order =
     sectionOrder && sectionOrder.length > 0
       ? sectionOrder
-      : ['about', 'projects', 'skills', 'contact'];
+      : ['about', 'projects', 'skills', 'experience', 'contact'];
 
   const sectionsHTML = order
     .map((key) => {
       const renderer = STANDARD_RENDERERS[key];
-      if (renderer) return renderer({ about, projects, skills, contact });
+      if (renderer) return renderer({ about, projects, skills, experience, contact });
       // Fall through to custom section
       if (customSections[key]) return renderCustomSection(key, customSections[key]);
       return '';

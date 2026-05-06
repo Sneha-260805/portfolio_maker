@@ -13,10 +13,31 @@ const generateUniqueSlug = async (name) => {
   return `${base}-${Date.now().toString(36)}`;
 };
 
+const DEFAULT_SECTION_ORDER = ['about', 'projects', 'skills', 'experience', 'contact'];
+
+const cleanExperience = (experience = []) =>
+  experience
+    .filter((item) => item && item.jobTitle && item.jobTitle.trim())
+    .map((item) => ({
+      jobTitle: item.jobTitle.trim(),
+      company: item.company || '',
+      location: item.location || '',
+      startDate: item.startDate || '',
+      endDate: item.currentlyWorking ? '' : item.endDate || '',
+      currentlyWorking: Boolean(item.currentlyWorking),
+      employmentType: item.employmentType || '',
+      description: Array.isArray(item.description)
+        ? item.description.filter((line) => line && line.trim()).map((line) => line.trim())
+        : [],
+      skillsUsed: Array.isArray(item.skillsUsed)
+        ? item.skillsUsed.filter((skill) => skill && skill.trim()).map((skill) => skill.trim())
+        : [],
+    }));
+
 // POST /api/portfolios — create a new portfolio
 const createPortfolio = async (req, res) => {
   try {
-    const { name, about, projects, skills, contact, theme, sectionOrder, customSections } = req.body;
+    const { name, about, projects, skills, experience, contact, theme, sectionOrder, customSections } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Name is required' });
@@ -27,15 +48,17 @@ const createPortfolio = async (req, res) => {
     // Drop projects with empty titles and skills with empty values
     const cleanProjects = (projects || []).filter((p) => p.title && p.title.trim());
     const cleanSkills = (skills || []).filter((s) => s && s.trim());
+    const cleanExperienceItems = cleanExperience(experience || []);
 
     const data = {
       name: name.trim(),
       slug,
       theme: theme || 'modern',
-      sectionOrder: sectionOrder || ['about', 'projects', 'skills', 'contact'],
+      sectionOrder: sectionOrder || DEFAULT_SECTION_ORDER,
       about: about || {},
       projects: cleanProjects,
       skills: cleanSkills,
+      experience: cleanExperienceItems,
       contact: contact || {},
       customSections: customSections || {},
     };
@@ -68,7 +91,7 @@ const updatePortfolio = async (req, res) => {
     const portfolio = await Portfolio.findOne({ slug: req.params.slug });
     if (!portfolio) return res.status(404).json({ error: 'Portfolio not found' });
 
-    const { name, about, projects, skills, contact, theme, sectionOrder, customSections } = req.body;
+    const { name, about, projects, skills, experience, contact, theme, sectionOrder, customSections } = req.body;
 
     if (name) portfolio.name = name.trim();
     if (theme) portfolio.theme = theme;
@@ -78,6 +101,8 @@ const updatePortfolio = async (req, res) => {
       portfolio.projects = projects.filter((p) => p.title && p.title.trim());
     if (skills !== undefined)
       portfolio.skills = skills.filter((s) => s && s.trim());
+    if (experience !== undefined)
+      portfolio.experience = cleanExperience(experience);
     if (contact !== undefined) portfolio.contact = contact;
     if (customSections !== undefined) {
       portfolio.customSections = customSections;

@@ -17,7 +17,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // Standard section IDs — these map to dedicated form editors
-const STANDARD_IDS = ['about', 'projects', 'skills', 'contact'];
+const STANDARD_IDS = ['about', 'projects', 'skills', 'experience', 'contact'];
 
 /** A single draggable + deletable row. */
 function SortableItem({ id, label, onDelete }) {
@@ -207,7 +207,7 @@ function DragSectionList({ sectionOrder, sectionLabels, onOrderChange, onAddSect
           </button>
         </div>
         <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '5px', lineHeight: 1.4 }}>
-          Type "about", "projects", "skills", or "contact" to restore a removed standard section.
+          Type "about", "projects", "skills", "experience", or "contact" to restore a removed standard section.
           Any other name creates a custom text section.
         </p>
       </div>

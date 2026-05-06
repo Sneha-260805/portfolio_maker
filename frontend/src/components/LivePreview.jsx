@@ -26,6 +26,9 @@ const THEMES = {
     linkStyle:   { color: '#6366f1', textDecoration: 'none', fontSize: '0.82rem', marginRight: '12px' },
     skillsWrap:  { display: 'flex', flexWrap: 'wrap', gap: '8px' },
     skillTag:    { background: '#ede9fe', color: '#5b21b6', padding: '4px 12px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 500 },
+    experienceCard: { border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px', marginBottom: '10px' },
+    experienceTitle: { fontWeight: 600, marginBottom: '5px', color: '#1e293b' },
+    experienceList: { margin: '8px 0 8px 18px', color: '#64748b', fontSize: '0.85rem', lineHeight: 1.5 },
     contactItem: { fontSize: '0.88rem', marginBottom: '7px', color: '#1e293b' },
     contactLink: { color: '#6366f1', textDecoration: 'none' },
     customBody:  { color: '#1e293b', lineHeight: 1.75, whiteSpace: 'pre-wrap', fontSize: '0.95rem' },
@@ -44,6 +47,9 @@ const THEMES = {
     linkStyle:   { color: '#818cf8', textDecoration: 'none', fontSize: '0.82rem', marginRight: '12px' },
     skillsWrap:  { display: 'flex', flexWrap: 'wrap', gap: '8px' },
     skillTag:    { background: '#312e81', color: '#a5b4fc', padding: '4px 12px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 500 },
+    experienceCard: { border: '1px solid #334155', borderRadius: '8px', padding: '14px', marginBottom: '10px', background: 'rgba(255,255,255,0.03)' },
+    experienceTitle: { fontWeight: 600, marginBottom: '5px', color: '#e2e8f0' },
+    experienceList: { margin: '8px 0 8px 18px', color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.5 },
     contactItem: { fontSize: '0.88rem', marginBottom: '7px', color: '#e2e8f0' },
     contactLink: { color: '#818cf8', textDecoration: 'none' },
     customBody:  { color: '#e2e8f0', lineHeight: 1.75, whiteSpace: 'pre-wrap', fontSize: '0.95rem' },
@@ -62,6 +68,9 @@ const THEMES = {
     linkStyle:   { color: '#f97316', textDecoration: 'none', fontSize: '0.82rem', marginRight: '12px', fontWeight: 600 },
     skillsWrap:  { display: 'flex', flexWrap: 'wrap', gap: '8px' },
     skillTag:    null, // handled per-index via FUN_TAG_COLORS
+    experienceCard: { border: '2px solid #f3e8ff', borderRadius: '14px', padding: '14px', marginBottom: '10px' },
+    experienceTitle: { fontWeight: 700, marginBottom: '5px', color: '#1a1a2e' },
+    experienceList: { margin: '8px 0 8px 18px', color: '#6b7280', fontSize: '0.85rem', lineHeight: 1.5 },
     contactItem: { fontSize: '0.88rem', marginBottom: '7px', color: '#1a1a2e', display: 'flex', alignItems: 'center', gap: '6px' },
     contactLink: { color: '#f97316', textDecoration: 'none', fontWeight: 600 },
     customBody:  { color: '#1a1a2e', lineHeight: 1.75, whiteSpace: 'pre-wrap', fontSize: '0.95rem' },
@@ -69,7 +78,7 @@ const THEMES = {
 };
 
 function LivePreview({ data }) {
-  const { name, theme, sectionOrder, about, projects, skills, contact, customSections = {} } = data;
+  const { name, theme, sectionOrder, about, projects, skills, experience = [], contact, customSections = {} } = data;
   // Fall back to 'fun' for old 'minimal' data still in the DB
   const t = THEMES[theme] || THEMES.fun;
 
@@ -85,6 +94,16 @@ function LivePreview({ data }) {
       };
     }
     return t.skillTag;
+  };
+
+  const formatDate = (value) => {
+    if (!value) return '';
+    const [year, month] = value.split('-');
+    if (!year || !month) return value;
+    return new Date(Number(year), Number(month) - 1).toLocaleString('en', {
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   const renderSection = (section) => {
@@ -133,6 +152,42 @@ function LivePreview({ data }) {
                 ))
               )}
             </div>
+          </div>
+        );
+
+      case 'experience':
+        return (
+          <div key="experience" style={t.section}>
+            <div style={t.h2}>Experience</div>
+            {experience.length === 0 ? (
+              <div style={t.muted}><em>No experience added yet.</em></div>
+            ) : (
+              experience.map((item, i) => {
+                const dateRange = [
+                  formatDate(item.startDate),
+                  item.currentlyWorking ? 'Present' : formatDate(item.endDate),
+                ].filter(Boolean).join(' - ');
+                const companyLine = [item.company, item.employmentType].filter(Boolean).join(' · ');
+                const meta = [companyLine, item.location, dateRange].filter(Boolean).join(' | ');
+
+                return (
+                  <div key={i} style={t.experienceCard}>
+                    <div style={t.experienceTitle}>{item.jobTitle}</div>
+                    {meta && <div style={t.muted}>{meta}</div>}
+                    {item.description?.length > 0 && (
+                      <ul style={t.experienceList}>
+                        {item.description.map((line, index) => (
+                          <li key={index}>{line}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {item.skillsUsed?.length > 0 && (
+                      <div style={{ ...t.muted, fontStyle: 'italic' }}>Skills: {item.skillsUsed.join(', ')}</div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         );
 
