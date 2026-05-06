@@ -123,14 +123,14 @@ function Editor() {
     try {
       if (slug) {
         await updatePortfolio(slug, formData);
-        setSuccessMsg(`Portfolio updated! Public URL: http://localhost:5000/p/${slug}`);
+        setSuccessMsg(`Portfolio updated! Your slug is "${slug}". Public URL: http://localhost:5000/p/${slug}`);
       } else {
         const res = await createPortfolio(formData);
         const newSlug = res.data.slug;
         setSlug(newSlug);
         // Update the browser URL without reloading
         window.history.replaceState({}, '', `/editor/${newSlug}`);
-        setSuccessMsg(`Portfolio saved! Public URL: http://localhost:5000/p/${newSlug}`);
+        setSuccessMsg(`Portfolio saved! Your slug is "${newSlug}". Public URL: http://localhost:5000/p/${newSlug}`);
       }
     } catch (err) {
       setSaveError(err.response?.data?.error || 'Failed to save portfolio. Is the backend running?');
@@ -319,6 +319,8 @@ function Editor() {
 
           {slug && (
             <div style={styles.slugBox}>
+              Save this slug to edit your portfolio later: <code>{slug}</code>
+              <br />
               Public URL: <code>http://localhost:5000/p/{slug}</code>
             </div>
           )}
