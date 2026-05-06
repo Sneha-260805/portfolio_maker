@@ -20,6 +20,18 @@ const aboutSchema = new mongoose.Schema({
   description: { type: String, default: '' },
 });
 
+const experienceSchema = new mongoose.Schema({
+  jobTitle: { type: String, default: '' },
+  company: { type: String, default: '' },
+  location: { type: String, default: '' },
+  startDate: { type: String, default: '' },
+  endDate: { type: String, default: '' },
+  currentlyWorking: { type: Boolean, default: false },
+  employmentType: { type: String, default: '' },
+  description: { type: [String], default: [] },
+  skillsUsed: { type: [String], default: [] },
+});
+
 const portfolioSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -31,11 +43,12 @@ const portfolioSchema = new mongoose.Schema(
     },
     sectionOrder: {
       type: [String],
-      default: ['about', 'projects', 'skills', 'contact'],
+      default: ['about', 'projects', 'skills', 'experience', 'contact'],
     },
     about: { type: aboutSchema, default: () => ({}) },
     projects: { type: [projectSchema], default: [] },
     skills: { type: [String], default: [] },
+    experience: { type: [experienceSchema], default: [] },
     contact: { type: contactSchema, default: () => ({}) },
     // Freeform sections added by the user (e.g. Experience, Education, custom titles)
     // Stored as { [sectionId]: { title: string, body: string } }
