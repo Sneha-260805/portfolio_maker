@@ -34,7 +34,7 @@ function Home() {
 
         {/* Divider */}
         <div style={styles.divider}>
-          <span style={styles.dividerText}>or load an existing one</span>
+          <span style={styles.dividerText}>or load an existing one using its slug</span>
         </div>
 
         {/* Load existing form */}
@@ -45,6 +45,9 @@ function Home() {
             onChange={(e) => { setSlug(e.target.value); setError(''); }}
             style={styles.slugInput}
           />
+          <div style={styles.slugHelp}>
+            New here? Click Create New Portfolio first. Your slug is created after you save and appears in your public URL.
+          </div>
           {error && <div style={styles.error}>{error}</div>}
           <button type="submit" style={styles.loadBtn}>Load &amp; Edit →</button>
         </form>
@@ -149,6 +152,13 @@ const styles = {
     fontSize: '0.95rem',
     fontFamily: 'inherit',
     marginBottom: '8px',
+  },
+  slugHelp: {
+    color: '#64748b',
+    fontSize: '0.78rem',
+    lineHeight: 1.45,
+    margin: '-2px 0 10px',
+    textAlign: 'center',
   },
   error: { color: '#dc2626', fontSize: '0.82rem', marginBottom: '8px' },
   loadBtn: {
